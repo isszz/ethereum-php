@@ -40,6 +40,11 @@ abstract class JSON_RPC_2
     /** @var bool */
     protected bool $debug = false;
 
+    /** @var string|null */
+    protected ?string $proxyAddress = null;
+    /** @var int|null */
+    protected ?int $proxyPort = null;
+
     /**
      * @return string
      */
@@ -94,6 +99,18 @@ abstract class JSON_RPC_2
     {
         $this->httpAuthUser = $user;
         $this->httpAuthPass = $pass;
+        return $this;
+    }
+
+    /**
+     * @param string $user
+     * @param ?int $pass
+     * @return $this
+     */
+    public function setProxy(string $address, ?int $port): self
+    {
+        $this->proxyAddress = $address;
+        $this->proxyPort = $port;
         return $this;
     }
 
@@ -167,6 +184,12 @@ abstract class JSON_RPC_2
         if ($this->httpAuthUser || $this->httpAuthPass) {
             curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
             curl_setopt($ch, CURLOPT_USERPWD, sprintf('%s:%s', $this->httpAuthUser ?? "", $this->httpAuthPass ?? ""));
+        }
+
+        // Proxy
+        if ($this->proxyAddress && $this->proxyPort) {
+            curl_setopt($ch, CURLOPT_PROXY, $this->proxyAddress);
+            curl_setopt($ch, CURLOPT_PROXYPORT, $this->proxyPort);
         }
 
         // Timeouts
